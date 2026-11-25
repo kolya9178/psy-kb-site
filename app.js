@@ -90,6 +90,8 @@
     prevDepth = depth
 
     try { window.scrollTo(0, 0) } catch (e) {}
+    view.className = 'view'
+    document.body.classList.toggle('in-chat', head === 'cat')
 
     if (head === 'kp') renderKp(decodeURIComponent(seg[1] || ''))
     else if (head === 'sec') renderSection(Number(seg[1]), Number(seg[2]))
@@ -97,6 +99,7 @@
     else if (head === 'pairs') renderPairs()
     else if (head === 'pair') renderPair(seg[1] || '', seg[2] || '')
     else if (head === 'graph') renderGraph(seg[1] ? decodeURIComponent(seg[1]) : '')
+    else if (head === 'cat') renderCat()
     else if (head === 'map') renderMap()
     else renderChapters()
 
@@ -484,6 +487,16 @@
       sugg.innerHTML = hits.map(({ kp }) => `<button class="chip" data-id="${kp.id}" style="margin:0 6px 6px 0">${esc(kp.title)}</button>`).join('')
       sugg.querySelectorAll('[data-id]').forEach(b => b.addEventListener('click', () => go('#/graph/' + b.dataset.id)))
     })
+  }
+
+  /* ---------- 问猫 ---------- */
+
+  function renderCat() {
+    setTab('cat')
+    topSub.textContent = '问猫 · 只答这本书里的内容'
+    view.classList.add('chat-view')
+    if (window.PsyCat) window.PsyCat.render(view)
+    else view.innerHTML = '<div class="empty">问答模块没加载出来。</div>'
   }
 
   /* ---------- 结构树 ---------- */
