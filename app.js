@@ -154,7 +154,9 @@
     const points = (k.points || []).map(p => `<li>${esc(p)}</li>`).join('')
     const ex = (k.examples || []).length
       ? `<div class="examples"><b>例子</b>：${esc(k.examples.join('；'))}</div>` : ''
-    const kw = [...(k.keywords || []), ...(k.aliases || [])]
+    const kw = [...new Set([...(k.keywords || []), ...(k.aliases || [])])]
+      .filter(x => x && x !== k.title)
+      .slice(0, 6)
       .map(x => `<span class="chip">${esc(x)}</span>`).join('')
     const partnerChips = partners.length
       ? partners.map(p => `<a class="chip" href="#/pair/${[k.id, p.id].sort()[0]}/${[k.id, p.id].sort()[1]}">${esc(p.title)}</a>`).join('')
@@ -193,7 +195,7 @@
     const opts = D.chapters.map((c, i) => `<option value="${i + 1}">第 ${i + 1} 章 ${esc(c.title)}</option>`).join('')
     view.innerHTML = `
       <div class="searchbar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
         <input id="q" type="search" placeholder="搜概念、术语、人名…" autocomplete="off" value="${esc(state.q)}">
         <button class="clr" id="clr" aria-label="清空">×</button>
       </div>
@@ -257,7 +259,7 @@
     view.innerHTML = `
       <div class="chip-row">${chips}</div>
       <div class="searchbar" style="margin:10px 0">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
         <input id="pq" type="search" placeholder="按标题过滤，如 恒常、注意" value="${esc(state.pairQ)}" autocomplete="off">
       </div>
       <div id="plist"></div>`
