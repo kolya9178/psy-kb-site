@@ -75,21 +75,70 @@
 
   /* ---------- 路由 ---------- */
 
+  /* 路由层级：判断「前进 / 返回」，决定过渡方向 */
+  const DEPTH = { chapters: 0, map: 1, pairs: 1, search: 1, sec: 1, kp: 2, pair: 2, graph: 2 }
+  let prevDepth = 0
+  let lastKpId = ''
+
   let lastHash = ''
   function render(input) {
     lastHash = input !== undefined ? input : location.hash
     const { seg } = parseHash(input)
     const head = seg[0] || 'chapters'
+    const depth = DEPTH[head] ?? 0
+    const dir = depth === prevDepth ? 0 : (depth > prevDepth ? 1 : -1)
+    prevDepth = depth
+
     try { window.scrollTo(0, 0) } catch (e) {}
-    if (head === 'kp') return renderKp(decodeURIComponent(seg[1] || ''))
-    if (head === 'sec') return renderSection(Number(seg[1]), Number(seg[2]))
-    if (head === 'search') return renderSearch()
-    if (head === 'pairs') return renderPairs()
-    if (head === 'pair') return renderPair(seg[1] || '', seg[2] || '')
-    if (head === 'graph') return renderGraph(seg[1] ? decodeURIComponent(seg[1]) : '')
-    if (head === 'map') return renderMap()
-    return renderChapters()
+
+    if (head === 'kp') renderKp(decodeURIComponent(seg[1] || ''))
+    else if (head === 'sec') renderSection(Number(seg[1]), Number(seg[2]))
+    else if (head === 'search') renderSearch()
+    else if (head === 'pairs') renderPairs()
+    else if (head === 'pair') renderPair(seg[1] || '', seg[2] || '')
+    else if (head === 'graph') renderGraph(seg[1] ? decodeURIComponent(seg[1]) : '')
+    else if (head === 'map') renderMap()
+    else renderChapters()
+
+    animatePage(dir)
+    syncBackButton(seg)
   }
+
+  function animatePage(dir) {
+    view.classList.remove('page-in', 'page-back', 'page-fade')
+    void view.offsetWidth           /* 强制重排，让动画能重放 */
+    view.classList.add(dir > 0 ? 'page-in' : dir < 0 ? 'page-back' : 'page-fade')
+  }
+
+  /* ---------- 返回按钮 ---------- */
+  const backBtn = document.getElementById('backBtn')
+
+  function backTargetFor(seg) {
+    const head = seg[0] || 'chapters'
+    if (head === 'kp') {
+      const k = byId.get(decodeURIComponent(seg[1] || ''))
+      if (k) {
+        const idx = secIndexOf(k.chapter, k.section)
+        return idx >= 0 ? `#/sec/${k.chapter}/${idx}` : '#/chapters'
+      }
+      return '#/chapters'
+    }
+    if (head === 'sec' || head === 'map') return '#/chapters'
+    if (head === 'pair') return '#/pairs'
+    if (head === 'graph') return lastKpId ? `#/kp/${lastKpId}` : '#/chapters'
+    return null
+  }
+
+  function syncBackButton(seg) {
+    const t = backTargetFor(seg)
+    backBtn.hidden = !t
+    backBtn.dataset.target = t || ''
+  }
+
+  backBtn.addEventListener('click', () => {
+    const t = backBtn.dataset.target
+    if (t) go(t)
+  })
 
   /* ---------- 章节 ---------- */
 
@@ -117,10 +166,50 @@
     view.querySelectorAll('[data-toggle]').forEach(btn => {
       btn.addEventListener('click', () => {
         const no = Number(btn.dataset.toggle)
-        state.openCh.has(no) ? state.openCh.delete(no) : state.openCh.add(no)
-        renderChapters()
+        const section = btn.closest('.ch')
+        const body = section.querySelector('.ch-body')
+        const willOpen = !state.openCh.has(no)
+        if (willOpen) state.openCh.add(no)
+        else state.openCh.delete(no)
+        btn.setAttribute('aria-expanded', String(willOpen))
+        slideBody(section, body, willOpen)
       })
     })
+  }
+
+  /* 展开/收起用高度过渡，不整页重绘 */
+  function slideBody(section, body, open) {
+    if (open) {
+      body.hidden = false
+      body.classList.add('sliding')
+      body.style.maxHeight = '0px'
+      section.classList.add('open')
+      requestAnimationFrame(() => {
+        body.style.maxHeight = body.scrollHeight + 'px'
+      })
+      const done = e => {
+        if (e && e.propertyName !== 'max-height') return
+        body.style.maxHeight = 'none'
+        body.classList.remove('sliding')
+        body.removeEventListener('transitionend', done)
+      }
+      body.addEventListener('transitionend', done)
+    } else {
+      section.classList.remove('open')
+      body.classList.add('sliding')
+      body.style.maxHeight = body.scrollHeight + 'px'
+      requestAnimationFrame(() => {
+        body.style.maxHeight = '0px'
+      })
+      const done = e => {
+        if (e && e.propertyName !== 'max-height') return
+        body.hidden = true
+        body.style.maxHeight = ''
+        body.classList.remove('sliding')
+        body.removeEventListener('transitionend', done)
+      }
+      body.addEventListener('transitionend', done)
+    }
   }
 
   function renderSection(chNo, secIdx) {
@@ -148,6 +237,7 @@
   function renderKp(id) {
     const k = byId.get(id)
     if (!k) { view.innerHTML = '<div class="empty">找不到这个知识点</div>'; return }
+    lastKpId = k.id
     setTab('chapters')
     const partners = (k.confusable || []).map(x => byId.get(x)).filter(Boolean)
     const tags = (k.tags || []).map(t => `<span class="tag${/高频|易错|易混/.test(t) ? ' hot' : ''}">${esc(t)}</span>`).join('')

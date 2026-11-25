@@ -326,3 +326,65 @@ details.sub .leaf span { color: var(--muted); font-size: 13px; margin-left: 6px;
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   过渡与返回
+   ============================================================ */
+
+/* ---------- 顶栏返回 ---------- */
+.topbar .bar { display: flex; align-items: center; gap: 4px; }
+.topbar .back {
+  border: 0; background: none; padding: 0; margin: 0 4px 0 -4px;
+  color: var(--accent); line-height: 1; cursor: pointer;
+  display: flex; align-items: center;
+}
+.topbar .back[hidden] { display: none; }
+.topbar .back:active { opacity: .6; }
+
+/* ---------- 页面切换 ---------- */
+.view.page-in    { animation: pageIn .26s cubic-bezier(.2, .8, .3, 1) both; }
+.view.page-back  { animation: pageBack .26s cubic-bezier(.2, .8, .3, 1) both; }
+.view.page-fade  { animation: pageFade .18s ease both; }
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translate3d(14px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pageBack {
+  from { opacity: 0; transform: translate3d(-14px, 0, 0); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes pageFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------- 章节展开 ---------- */
+.ch-body {
+  overflow: hidden;
+  max-height: none;
+}
+.ch-body.sliding { transition: max-height .28s cubic-bezier(.2, .8, .3, 1); }
+.ch-body[hidden] { display: none; }
+
+/* 展开时内部依次淡入，避免一坨内容同时出现 */
+.ch.open .ch-body .sec {
+  animation: secIn .3s ease both;
+}
+.ch.open .ch-body .sec:nth-child(1) { animation-delay: .02s; }
+.ch.open .ch-body .sec:nth-child(2) { animation-delay: .05s; }
+.ch.open .ch-body .sec:nth-child(3) { animation-delay: .08s; }
+.ch.open .ch-body .sec:nth-child(4) { animation-delay: .11s; }
+.ch.open .ch-body .sec:nth-child(5) { animation-delay: .14s; }
+.ch.open .ch-body .sec:nth-child(n+6) { animation-delay: .16s; }
+
+@keyframes secIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view.page-in, .view.page-back, .view.page-fade,
+  .ch.open .ch-body .sec { animation: none !important; }
+  .ch-body.sliding { transition: none !important; }
+}
