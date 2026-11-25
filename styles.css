@@ -398,7 +398,7 @@ details.sub .leaf span { color: var(--muted); font-size: 13px; margin-left: 6px;
    flex 布局下 100dvh 随视口变化，输入栏自然贴着 tab 栏。 */
 body.in-chat {
   display: flex; flex-direction: column;
-  height: 100vh; height: 100dvh;
+  height: 100vh;   /* 不用 dvh：夸克/UC 内核收键盘后不恢复，会只剩半屏 */
   overflow: hidden;
   padding-bottom: 0;
 }

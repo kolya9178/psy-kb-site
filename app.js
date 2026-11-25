@@ -97,6 +97,7 @@
     } catch (e) {}
     view.className = 'view'
     document.body.classList.toggle('in-chat', head === 'cat')
+    if (head !== 'cat') document.body.style.height = ''
 
     if (head === 'kp') renderKp(decodeURIComponent(seg[1] || ''))
     else if (head === 'sec') renderSection(Number(seg[1]), Number(seg[2]))

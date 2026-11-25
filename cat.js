@@ -443,8 +443,14 @@
      Android Chrome 认 interactive-widget=resizes-content，视口自己会缩；
      不认的浏览器（部分 iOS/老内核）用 visualViewport 算键盘高度补进去。 */
   function syncKeyboard() {
-    /* 浏览器已通过 interactive-widget=resizes-content 自行缩放视口，
-       这里只负责把聊天区滚到底，不再重复扣键盘高度（扣两次会把界面顶飞）。 */
+    /* 直接按可视视口给 body 定高：
+       键盘弹出 → vv.height 变小 → body 变矮，输入栏贴着键盘；
+       键盘收起 → vv.height 恢复 → body 长回来。
+       （不用 100dvh，部分安卓浏览器不会自动恢复） */
+    if (!document.body.classList.contains('in-chat')) return
+    const vv = global.visualViewport
+    const h = vv ? vv.height : global.innerHeight
+    if (h > 0) document.body.style.height = Math.round(h) + 'px'
     scrollEnd()
   }
 
@@ -505,10 +511,8 @@
     })
 
     bindViewport()
-    setTimeout(() => {
-      try { input.focus({ preventScroll: true }) } catch (e) {}
-      syncKeyboard()
-    }, 120)
+    syncKeyboard()
+    /* 不自动聚焦：进页就弹键盘会让布局先缩一次，用户点输入框时浏览器自己会处理 */
   }
 
   global.PsyCat = { render, ask, answer, detect }
