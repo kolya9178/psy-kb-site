@@ -47,7 +47,9 @@ button { font: inherit; color: inherit; }
 .topbar .brand span { color: var(--muted); font-weight: 400; margin-left: 4px; }
 .topbar .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
 
-.view { max-width: 720px; margin: 0 auto; padding: 16px 16px 96px; }
+.view { margin: 0 auto; padding: 16px 16px 96px; }
+/* 限宽只在真正的大屏上生效，手机一律满宽 */
+@media (min-width: 820px) { .view { max-width: 720px; } }
 
 /* ---------- 通用模块 ---------- */
 /* 面：只靠亮度区分，没有边框、没有阴影 */
@@ -413,9 +415,13 @@ body.in-chat .tabbar { position: static; flex: 0 0 auto; }
 .chat {
   position: relative; z-index: 15;
   flex: 1 1 auto; min-height: 0;
-  width: 100%; max-width: 720px; margin: 0 auto;
+  width: 100%;            /* 手机上不设上限：某些内核视口算得偏大，max-width 会把内容压窄 */
   display: flex; flex-direction: column;
   background: var(--bg);
+}
+/* 只有大屏（平板/桌面）才限宽居中 */
+@media (min-width: 820px) {
+  .chat { max-width: 720px; margin: 0 auto; }
 }
 
 .chat-list {
