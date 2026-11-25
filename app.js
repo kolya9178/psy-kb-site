@@ -90,6 +90,11 @@
     prevDepth = depth
 
     try { window.scrollTo(0, 0) } catch (e) {}
+    /* 切页先收键盘：否则搜索页的焦点会把键盘带进问猫，fixed 布局算错 */
+    try {
+      const ae = document.activeElement
+      if (ae && ae !== document.body && typeof ae.blur === 'function') ae.blur()
+    } catch (e) {}
     view.className = 'view'
     document.body.classList.toggle('in-chat', head === 'cat')
 

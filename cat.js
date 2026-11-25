@@ -439,6 +439,23 @@
     scrollEnd()
   }
 
+  /* ---------- 键盘补偿 ----------
+     Android Chrome 认 interactive-widget=resizes-content，视口自己会缩；
+     不认的浏览器（部分 iOS/老内核）用 visualViewport 算键盘高度补进去。 */
+  function syncKeyboard() {
+    /* 浏览器已通过 interactive-widget=resizes-content 自行缩放视口，
+       这里只负责把聊天区滚到底，不再重复扣键盘高度（扣两次会把界面顶飞）。 */
+    scrollEnd()
+  }
+
+  function bindViewport() {
+    const vv = global.visualViewport
+    if (!vv) return
+    vv.addEventListener('resize', syncKeyboard)
+    vv.addEventListener('scroll', syncKeyboard)
+    syncKeyboard()
+  }
+
   /* ---------- 视图 ---------- */
 
   const QUICK = ['什么是知觉的恒常性', '感觉和知觉有什么区别', '短时记忆在第几页', '129 页讲了什么', '来一条']
@@ -487,7 +504,11 @@
       ask(v)
     })
 
-    setTimeout(() => { try { input.focus({ preventScroll: true }) } catch (e) {} }, 120)
+    bindViewport()
+    setTimeout(() => {
+      try { input.focus({ preventScroll: true }) } catch (e) {}
+      syncKeyboard()
+    }, 120)
   }
 
   global.PsyCat = { render, ask, answer, detect }

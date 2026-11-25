@@ -393,12 +393,27 @@ details.sub .leaf span { color: var(--muted); font-size: 13px; margin-left: 6px;
    问猫（本地问答）
    ============================================================ */
 
+/* 聊天页改用整页 flex 分配高度：
+   fixed + top/bottom 在键盘弹出时算不准，会把自己压扁；
+   flex 布局下 100dvh 随视口变化，输入栏自然贴着 tab 栏。 */
+body.in-chat {
+  display: flex; flex-direction: column;
+  height: 100vh; height: 100dvh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+body.in-chat .topbar { flex: 0 0 auto; }
+body.in-chat #view {
+  flex: 1 1 auto; min-height: 0;
+  padding: 0; max-width: none;
+  display: flex; flex-direction: column;
+}
+body.in-chat .tabbar { position: static; flex: 0 0 auto; }
+
 .chat {
-  position: fixed; z-index: 15;
-  left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 720px;
-  top: calc(62px + env(safe-area-inset-top));
-  bottom: calc(57px + env(safe-area-inset-bottom));
+  position: relative; z-index: 15;
+  flex: 1 1 auto; min-height: 0;
+  width: 100%; max-width: 720px; margin: 0 auto;
   display: flex; flex-direction: column;
   background: var(--bg);
 }
