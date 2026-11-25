@@ -70,6 +70,7 @@
       /^(.+?)(?:是什么|是啥|是什么意思|的定义|定义|指什么|是哪个)$/,
       /^(?:讲讲|说说|解释一下|解释|介绍一下|介绍|聊一下|聊聊)\s*(.+)$/,
       /^(.+?)(?:在哪一章|在第几章|在哪一节|在哪|哪里|第几页|多少页)[？?]?$/,
+      /^(?:怎么|如何|怎样|咋)(?:理解|看|区分|分辨|记|背|学|用)\s*(.+)$/,
     ]
     for (const p of pats) {
       const m = s.match(p)
@@ -83,15 +84,38 @@
     return q.replace(/的|了|吗|呢|啊|呀|吧|请问|一下|这个|那个|概念|定义/g, '').trim()
   }
 
+  /* 常用词：拆词兜底时跳过，否则「所以」「问题」会撞上任意一条定义 */
+  const STOP = new Set([
+    '所以', '因此', '这个', '那个', '什么', '怎么', '怎样', '可以', '能不', '不能',
+    '问题', '回答', '答案', '课本', '教材', '书本', '我们', '你们', '它们', '他们',
+    '就是', '不是', '有没', '没有', '一个', '这样', '那样', '知道', '觉得', '应该',
+    '为什', '么样', '怎样', '如何', '是否', '是不', '不是', '只回', '答课', '本问',
+    '你的', '我的', '它的', '是不', '么是', '么叫', '一下', '帮我', '告诉',
+  ])
+
   function findKps(q, limit) {
     const t = strip(extractTerms(q))
     if (!t) return []
-    let hits = L.search(D.kps, t)
-    if (!hits.length && t.length > 2) {
-      /* 退一步：按 2-gram 拆开再搜 */
-      for (let i = 0; i + 2 <= t.length && !hits.length; i++) {
-        hits = L.search(D.kps, t.slice(i, i + 2))
+    /* 整句检索：只要分数够低就不认（定义里蹭到一两个字的算噪声） */
+    let hits = L.search(D.kps, t).filter(h => h.score >= 28)
+    if (!hits.length && t.length >= 2) {
+      /* 退一步：按 2-gram 拆开搜，跳过常用词，只认标题/别名/关键词级（≥60）。
+         关键：全部片段都搜一遍再累计，被多个片段命中的更相关，
+         避免「第一个撞上的赢」（问「知觉的恒常性」就不会只答「知觉」）。 */
+      const acc = new Map()
+      for (let i = 0; i + 2 <= t.length; i++) {
+        const g = t.slice(i, i + 2)
+        if (STOP.has(g)) continue
+        for (const h of L.search(D.kps, g)) {
+          if (h.score < 60) continue
+          const prev = acc.get(h.kp.id)
+          if (prev) { prev.n += 1; prev.best = Math.max(prev.best, h.score) }
+          else acc.set(h.kp.id, { kp: h.kp, n: 1, best: h.score })
+        }
       }
+      hits = [...acc.values()]
+        .sort((a, b) => (b.n * 80 + b.best) - (a.n * 80 + a.best))
+        .map(x => ({ kp: x.kp, score: x.n * 80 + x.best }))
     }
     return pick(hits, limit || 3)
   }
@@ -150,6 +174,14 @@
 
     if (/^(你好|您好|嗨|hi|hello|在吗|在不在|猫|猫猫|科利亚)/i.test(s)) return { type: 'greet' }
     if (/(你能做什么|你会什么|帮助|怎么用|help|说明)/i.test(s)) return { type: 'help' }
+
+    /* 关于猫自己的问题，不要当成问概念 */
+    if (
+      /(你|猫).{0,4}(只|仅).{0,4}(回答|答|讲|说)/.test(s) ||
+      /只(回答|答).{0,6}(课本|教材|书)/.test(s) ||
+      /^(你|猫)(是|能|会|到底|究竟)/.test(s) ||
+      /你是谁|你叫什么|你是什么/.test(s)
+    ) return { type: 'about' }
     if (/(随便|随机|来一条|来一个|逛逛|翻翻|看看别的)/.test(s)) return { type: 'random' }
 
     if (GAPS.some(g => low.includes(g))) return { type: 'gap', term: s }
@@ -171,6 +203,15 @@
     if (it.type === 'empty') return { text: '嗯？猫没听清，再说一遍？' }
     if (it.type === 'greet') return { text: rand(GREET) }
     if (it.type === 'help') return { text: HELP }
+
+    if (it.type === 'about') {
+      return {
+        text: `对，猫只答这本《普通心理学》第六版里的东西。\n\n` +
+          `能查的：593 个知识点、452 对易混、14 章目录、588 页原文。\n` +
+          `书里没写的（瑞文测验、信度效度、习得性无助这些），猫会直接说没有，不编。\n\n` +
+          `想问具体的，直接说术语，比如「工作记忆」「知觉有什么特性」。`,
+      }
+    }
 
     if (it.type === 'random') {
       const k = D.kps[Math.floor(Math.random() * D.kps.length)]
