@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f5f7">
+<title>普通心理学（第六版）· 资料库</title>
+<link rel="stylesheet" href="styles.css?v=5c255740">
+<link rel="stylesheet" href="feedback.css?v=4e2be887">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">普通心理学 <span>第六版</span></div>
+  <div class="sub" id="topSub">资料库 · 593 个知识点</div>
+</header>
+
+<main id="view" class="view" aria-live="polite"></main>
+<noscript>
+  <p style="padding:16px;color:#6b7280">这个页面需要 JavaScript 才能渲染 593 个知识点。请用浏览器直接打开 index.html，或在目录里运行 <code>python3 -m http.server</code> 后访问。</p>
+</noscript>
+
+<nav class="tabbar" id="tabbar" aria-label="主导航">
+  <a href="#/chapters" data-tab="chapters">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5H6.5A2.5 2.5 0 0 0 4 21V5.5Z"/><path d="M8.5 3v15.5"/></svg></span>
+    章节
+  </a>
+  <a href="#/search" data-tab="search">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></span>
+    搜索
+  </a>
+  <a href="#/pairs" data-tab="pairs">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/></svg></span>
+    易混
+  </a>
+  <a href="#/map" data-tab="map">
+    <span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5.5" cy="18" r="2.2"/><circle cx="18.5" cy="18" r="2.2"/><path d="M12 7.2v4.3m0 0-5 4.6m5-4.6 5 4.6"/></svg></span>
+    结构
+  </a>
+</nav>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="mask" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <button class="close" data-close aria-label="关闭">×</button>
+    <h2 id="sheetTitle">原书页</h2>
+    <div class="meta" id="sheetMeta"></div>
+    <div class="page-text" id="sheetBody"></div>
+  </div>
+</div>
+
+<script src="data.js?v=694b8b2a"></script>
+<script src="pages.js?v=b4e4921e"></script>
+<script src="lib.js?v=637b0a79"></script>
+<script src="app.js?v=58864df3"></script>
+<script src="feedback.js?v=de40dfb9" defer></script>
+</body>
+</html>
