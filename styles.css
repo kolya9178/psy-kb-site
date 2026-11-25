@@ -21,10 +21,16 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;          /* 兜底：任何元素想撑破都不许横向滚 */
+  max-width: 100vw;
+}
 
 body {
   margin: 0;
+  overflow-x: hidden;
+  max-width: 100vw;
   background: var(--bg);
   color: var(--ink);
   font: 15px/1.75 -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
@@ -406,15 +412,16 @@ body.in-chat {
 }
 body.in-chat .topbar { flex: 0 0 auto; }
 body.in-chat #view {
-  flex: 1 1 auto; min-height: 0;
-  padding: 0; max-width: none;
+  flex: 1 1 auto; min-height: 0; min-width: 0;
+  padding: 0; max-width: 100%; width: 100%;
   display: flex; flex-direction: column;
 }
 body.in-chat .tabbar { position: static; flex: 0 0 auto; }
 
 .chat {
   position: relative; z-index: 15;
-  flex: 1 1 auto; min-height: 0;
+  flex: 1 1 auto; min-height: 0; min-width: 0;
+  max-width: 100%;
   width: 100%;            /* 手机上不设上限：某些内核视口算得偏大，max-width 会把内容压窄 */
   display: flex; flex-direction: column;
   background: var(--bg);
@@ -474,11 +481,10 @@ body.in-chat .tabbar { position: static; flex: 0 0 auto; }
 
 /* 快捷词 */
 .chat-quick {
-  display: flex; gap: 8px; overflow-x: auto; padding: 0 14px 8px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 0 14px 8px;
   min-width: 0; max-width: 100%;
-  scrollbar-width: none;
 }
-.chat-quick::-webkit-scrollbar { display: none; }
 .qchip {
   flex: 0 0 auto; border: 0; background: var(--surface); color: var(--muted);
   border-radius: 999px; padding: 7px 13px; font-size: 13px;
